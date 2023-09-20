@@ -53,11 +53,11 @@ app.delete('/api/persons/:id', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const name = req.body.name
-    const number = req.body.number
+    const { name, number} = req.body
     Person.findByIdAndUpdate(
         req.params.id,
-        { name, number }
+        { name, number },
+        { new: true, runValidators: true}
         )
         .then((person) => res.json(person))
         .catch((error) => next(error))
@@ -65,13 +65,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 app.post('/api/persons', (req, res, next) => {
     const body = req.body
-    
-    if (!body.name || !body.number) {
-        return res.status(400).json({
-            error: 'fields missing'
-        })
-        .catch(error => next(error))
-    }
+
     const person = new Person({
         name: body.name,
         number: body.number,
@@ -80,6 +74,7 @@ app.post('/api/persons', (req, res, next) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
+    .catch(error => next(error))
 })
 
 const unknownEndpoint = (req, res) => {
@@ -89,12 +84,13 @@ const unknownEndpoint = (req, res) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, req, res, next) => {
-    console.error(error.message)
-
     if (error.name === 'CastError') {
         return res.status(400).send({ error: 'malformatted id' })
     }
-
+    else if (error.name === 'ValidationError') {
+        return res.status(400).json({error: error.message})
+    }
+    console.error(error.message)
     next(error)
 }
 
