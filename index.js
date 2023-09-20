@@ -5,19 +5,18 @@ const cors = require('cors')
 const app = express()
 
 const Person = require('./models/person')
-const { response } = require('express')
 
 app.use(express.json())
-morgan.token('body', (request) => JSON.stringify(request.body));
+morgan.token('body', (request) => JSON.stringify(request.body))
 
 app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms :body')
-);
+    morgan(':method :url :status :res[content-length] - :response-time ms :body')
+)
 
 app.use(cors())
 app.use(express.static('dist'))
 
-const date = new Date();
+const date = new Date()
 
 app.get('/', (req, res) => {
     res.send('<h1>Welcome!</h1>')
@@ -29,7 +28,7 @@ app.get('/api/persons', (req, res) => {
 
 app.get('/info', (req, res) => {
     Person.countDocuments().then((count) =>
-    res.send(`
+        res.send(`
     <div>
     <p>Phonebook has info for ${count} people</p>
     <p>${date}</p>
@@ -40,13 +39,13 @@ app.get('/info', (req, res) => {
 app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id)
         .then((person) => 
-        person ? res.json(person) : res.status(404).end())
+            person ? res.json(person) : res.status(404).end())
         .catch((error) => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-        .then(result => {
+        .then(() => {
             res.status(204).end()
         })
         .catch(error => next(error))
@@ -58,7 +57,7 @@ app.put('/api/persons/:id', (req, res, next) => {
         req.params.id,
         { name, number },
         { new: true, runValidators: true}
-        )
+    )
         .then((person) => res.json(person))
         .catch((error) => next(error))
 })
@@ -74,7 +73,7 @@ app.post('/api/persons', (req, res, next) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 const unknownEndpoint = (req, res) => {
@@ -97,6 +96,6 @@ const errorHandler = (error, req, res, next) => {
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
-  })
+})
